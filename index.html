@@ -6,6 +6,252 @@
     <title>Ôn tập Từ Vựng Tiếng Anh</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%); 
+            min-height: 100vh; margin: 0; padding: 20px; 
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .container { width: 100%; max-width: 700px; margin-top: 30px; }
+        .card { 
+            background: white; padding: 30px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 25px; 
+        }
+        h1 { color: #5e72e4; text-align: center; font-weight: 800; font-size: 28px; margin-bottom: 5px; }
+        h2 { color: #32325d; text-align: center; font-size: 22px; border-bottom: 2px dashed #eee; padding-bottom: 15px;}
+        h3 { color: #f5365c; font-size: 18px; margin-top: 25px; background: #fee6ea; display: inline-block; padding: 5px 15px; border-radius: 20px;}
+        
+        label { font-weight: bold; color: #525f7f; margin-top: 15px; display: block; }
+        input[type="text"], select { 
+            padding: 14px; margin: 10px 0 20px 0; width: 100%; box-sizing: border-box;
+            border-radius: 10px; border: 2px solid #e3e3e3; font-size: 16px; font-family: 'Nunito', sans-serif;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus, select:focus { border-color: #5e72e4; outline: none; box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2); }
+        
+        button { 
+            background: #5e72e4; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 18px;
+            padding: 15px; width: 100%; border-radius: 12px; transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); font-family: 'Nunito', sans-serif;
+        }
+        button:hover { transform: translateY(-2px); background: #324cdd; }
+        button:disabled { background: #a5b1c2; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .btn-submit { background: #2dce89; margin-top: 20px; }
+        .btn-submit:hover { background: #24a46d; }
+
+        .question-block { 
+            background: #f8f9fe; padding: 20px; border-radius: 15px; 
+            margin-bottom: 20px; border: 1px solid #e9ecef;
+        }
+        .question-block p { margin: 0 0 15px 0; color: #32325d; font-size: 16px; }
+        
+        .option-label {
+            display: block; padding: 12px 15px; margin-bottom: 10px; background: white; 
+            border: 2px solid #e9ecef; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+        }
+        .option-label:hover { border-color: #5e72e4; background: #f4f5f7; }
+        input[type="radio"] { margin-right: 10px; transform: scale(1.2); cursor: pointer;}
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="login-screen" class="card">
+        <h1>🚀 Thử Thách Từ Vựng</h1>
+        
+        <label>Họ và Tên của em:</label>
+        <input type="text" id="studentName" placeholder="Ví dụ: Nguyễn Văn A" required>
+        
+        <label>Chọn bài để ôn tập:</label>
+        <select id="unitSelect">
+            <option value="">Đang tải danh sách bài học từ Sheet...</option>
+        </select>
+        
+        <button id="startBtn" onclick="startTest()" disabled>Đang kết nối dữ liệu...</button>
+    </div>
+
+    <!-- MÀN HÌNH LÀM BÀI -->
+    <div id="test-screen" class="card hidden">
+        <h2 id="test-title">Đề thi</h2>
+        <div id="questions-container"></div>
+        <button class="btn-submit" onclick="submitTest()">✨ Nộp bài & Xem điểm</button>
+    </div>
+</div>
+
+<script>
+    // 👇👇👇 DÁN LINK WEB APP CỦA BẠN VÀO ĐÂY 👇👇👇
+    const API_URL = "https://script.google.com/macros/s/AKfycbw33V_isll0Crp6AqJwA2J6uePPAIbPcwRfLf8pM3DL5BRiPX-5msdimvD0ijD3SQw-EQ/exec"; 
+    
+    let allVocab = []; // Chứa toàn bộ từ vựng lấy về từ Sheet
+    let testVocab = []; // Chứa 30 từ ngẫu nhiên để làm bài
+    let totalQuestions = 0;
+
+    // Tự động chạy khi vừa mở trang web
+    window.onload = async function() {
+        const select = document.getElementById("unitSelect");
+        const btn = document.getElementById("startBtn");
+
+        try {
+            // Lấy toàn bộ dữ liệu từ Sheet (không phân biệt Unit)
+            const response = await fetch(API_URL);
+            allVocab = await response.json();
+            
+            // Lọc ra các Unit không trùng lặp để cho vào Dropdown
+            const units = [...new Set(allVocab.map(item => item.unit))];
+            
+            select.innerHTML = ""; 
+            if (units.length === 0) {
+                select.innerHTML = '<option value="">Chưa có dữ liệu trên Sheet</option>';
+            } else {
+                units.forEach(unit => {
+                    select.innerHTML += `<option value="${unit}">${unit}</option>`;
+                });
+                btn.disabled = false;
+                btn.innerText = "Bắt đầu làm bài";
+            }
+        } catch (error) {
+            select.innerHTML = '<option value="">Lỗi kết nối Sheet!</option>';
+            alert("Không tải được danh sách Unit. Em hãy tải lại trang nhé.");
+        }
+    };
+
+    function startTest() {
+        const name = document.getElementById("studentName").value.trim();
+        const selectedUnit = document.getElementById("unitSelect").value;
+        
+        if (!name) return alert("Em quên nhập tên kìa!");
+        if (!selectedUnit) return alert("Hệ thống chưa tải xong Unit!");
+
+        // Lọc ra toàn bộ từ vựng thuộc Unit đã chọn
+        let unitVocab = allVocab.filter(item => item.unit === selectedUnit);
+        
+        if(unitVocab.length === 0) {
+            return alert("Chưa có từ vựng nào trong Unit này!");
+        }
+
+        // Xáo trộn và cắt lấy tối đa 30 câu
+        let shuffled = [...unitVocab].sort(() => 0.5 - Math.random());
+        testVocab = shuffled.slice(0, 30);
+        totalQuestions = testVocab.length;
+
+        generateQuestions(unitVocab); // Truyền toàn bộ từ của Unit đó vào để lấy đáp án gây nhiễu
+
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("test-screen").classList.remove("hidden");
+        document.getElementById("test-title").innerText = `Học sinh: ${name} - ${selectedUnit} (${totalQuestions} câu)`;
+    }
+
+    function generateQuestions(fullUnitVocab) {
+        const container = document.getElementById("questions-container");
+        container.innerHTML = "";
+        
+        // Chia 30 câu này ra làm 2 phần (Phần 1 điền từ, Phần 2 trắc nghiệm)
+        const part1 = testVocab.slice(0, Math.ceil(testVocab.length / 2));
+        const part2 = testVocab.slice(Math.ceil(testVocab.length / 2));
+
+        container.innerHTML += `<h3>🎯 Phần 1: Mất chữ cái</h3>`;
+        part1.forEach((item, index) => {
+            let hiddenWord = item.word.replace(/[aeiou]/ig, '_'); 
+            container.innerHTML += `
+                <div class="question-block" data-type="fill" data-word="${item.word}" data-answer="${item.word.toLowerCase()}">
+                    <p><b>Câu ${index + 1}:</b> Nghĩa là "<b>${item.meaning}</b>".</p>
+                    <p>Gợi ý: ${hiddenWord}</p>
+                    <input type="text" class="answer-input" placeholder="Viết lại từ tiếng Anh đúng...">
+                </div>
+            `;
+        });
+
+        container.innerHTML += `<h3>🧠 Phần 2: Chọn nghĩa đúng</h3>`;
+        part2.forEach((item, index) => {
+            let options = [item.meaning];
+            
+            // Lấy thêm 3 nghĩa sai từ các từ khác trong CÙNG UNIT
+            while(options.length < 4 && fullUnitVocab.length >= 4) {
+                let randomMeaning = fullUnitVocab[Math.floor(Math.random() * fullUnitVocab.length)].meaning;
+                if(!options.includes(randomMeaning)) options.push(randomMeaning);
+            }
+            options.sort(() => 0.5 - Math.random()); 
+
+            let optionsHTML = options.map(opt => `
+                <label class="option-label">
+                    <input type="radio" name="q_${item.word}" value="${opt}"> ${opt}
+                </label>
+            `).join("");
+
+            container.innerHTML += `
+                <div class="question-block" data-type="choice" data-word="${item.word}" data-answer="${item.meaning}">
+                    <p><b>Câu ${part1.length + index + 1}:</b> Từ "<b>${item.word}</b>" có nghĩa là gì?</p>
+                    ${optionsHTML}
+                </div>
+            `;
+        });
+    }
+
+    async function submitTest() {
+        let score = 0;
+        let wrongDetails = []; 
+        const blocks = document.querySelectorAll(".question-block");
+        
+        blocks.forEach(block => {
+            const type = block.getAttribute("data-type");
+            const correctAnswer = block.getAttribute("data-answer");
+            const word = block.getAttribute("data-word"); 
+
+            if (type === "fill") {
+                const studentAnswer = block.querySelector(".answer-input").value.trim().toLowerCase();
+                if (studentAnswer === correctAnswer) {
+                    score++;
+                } else {
+                    wrongDetails.push(`[Điền từ] ${word}: Khách làm "${studentAnswer || 'bỏ trống'}"`);
+                }
+            } else if (type === "choice") {
+                const selected = block.querySelector("input[type='radio']:checked");
+                if (selected && selected.value === correctAnswer) {
+                    score++;
+                } else {
+                    const ans = selected ? selected.value : 'bỏ trống';
+                    wrongDetails.push(`[Trắc nghiệm] ${word}: Chọn "${ans}"`);
+                }
+            }
+        });
+
+        const finalScore = `${score}/${totalQuestions}`;
+        alert(`Làm tốt lắm! Em đúng ${finalScore} câu. Nhấn OK để nộp bài nhé!`);
+
+        const detailString = wrongDetails.length === 0 ? "Đúng 100%" : wrongDetails.join(" | ");
+
+        const resultData = {
+            studentName: document.getElementById("studentName").value,
+            unit: document.getElementById("unitSelect").value,
+            score: finalScore,
+            details: detailString 
+        };
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(resultData)
+            });
+            alert("Đã gửi điểm cho Thầy thành công!");
+            location.reload(); 
+        } catch (error) {
+            alert("Lỗi mạng, chưa gửi được điểm. Hãy thử nộp lại.");
+        }
+    }
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn tập Từ Vựng Tiếng Anh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
         /* CSS GIAO DIỆN HIỆN ĐẠI */
         body { 
             font-family: 'Nunito', sans-serif; 
