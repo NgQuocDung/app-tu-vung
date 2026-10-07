@@ -4,174 +4,225 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ôn tập Từ Vựng Tiếng Anh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px; max-width: 800px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1, h2 { color: #2c3e50; text-align: center; }
-        input, select, button { padding: 10px; margin: 10px 0; width: 100%; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
-        button { background-color: #3498db; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #2980b9; }
-        .question-block { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+        /* CSS GIAO DIỆN HIỆN ĐẠI */
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%); 
+            min-height: 100vh; margin: 0; padding: 20px; 
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .container { width: 100%; max-width: 700px; margin-top: 30px; }
+        .card { 
+            background: white; padding: 30px; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: 25px; 
+        }
+        h1 { color: #5e72e4; text-align: center; font-weight: 800; font-size: 28px; margin-bottom: 5px; }
+        h2 { color: #32325d; text-align: center; font-size: 22px; border-bottom: 2px dashed #eee; padding-bottom: 15px;}
+        h3 { color: #f5365c; font-size: 18px; margin-top: 25px; background: #fee6ea; display: inline-block; padding: 5px 15px; border-radius: 20px;}
+        
+        label { font-weight: bold; color: #525f7f; margin-top: 15px; display: block; }
+        input[type="text"], select { 
+            padding: 14px; margin: 10px 0 20px 0; width: 100%; box-sizing: border-box;
+            border-radius: 10px; border: 2px solid #e3e3e3; font-size: 16px; font-family: 'Nunito', sans-serif;
+            transition: all 0.3s;
+        }
+        input[type="text"]:focus, select:focus { border-color: #5e72e4; outline: none; box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2); }
+        
+        button { 
+            background: #5e72e4; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 18px;
+            padding: 15px; width: 100%; border-radius: 12px; transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); font-family: 'Nunito', sans-serif;
+        }
+        button:hover { transform: translateY(-2px); background: #324cdd; }
+        
+        .btn-submit { background: #2dce89; margin-top: 20px; }
+        .btn-submit:hover { background: #24a46d; }
+
+        .question-block { 
+            background: #f8f9fe; padding: 20px; border-radius: 15px; 
+            margin-bottom: 20px; border: 1px solid #e9ecef;
+        }
+        .question-block p { margin: 0 0 15px 0; color: #32325d; font-size: 16px; }
+        
+        /* Chỉnh style cho Radio button (Trắc nghiệm) */
+        .option-label {
+            display: block; padding: 12px 15px; margin-bottom: 10px; background: white; 
+            border: 2px solid #e9ecef; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+        }
+        .option-label:hover { border-color: #5e72e4; background: #f4f5f7; }
+        input[type="radio"] { margin-right: 10px; transform: scale(1.2); cursor: pointer;}
+        
         .hidden { display: none; }
-        .matching-container { display: flex; justify-content: space-between; }
-        .match-list { width: 45%; list-style: none; padding: 0; }
-        .match-item { padding: 10px; background: #ecf0f1; margin-bottom: 5px; border-radius: 5px; cursor: pointer; text-align: center; }
-        .match-item.selected { background: #f1c40f; }
-        .match-item.matched { background: #2ecc71; color: white; pointer-events: none; }
+        .loading { text-align: center; color: #fb6340; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
 
+<div class="container">
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen" class="card">
-        <h1>Vào thi Từ Vựng</h1>
-        <label>Họ và Tên của em:</label>
-        <input type="text" id="studentName" placeholder="Nhập tên vào đây..." required>
+        <h1>🚀 Thử Thách Từ Vựng</h1>
         
-        <label>Chọn Unit bài tập:</label>
+        <label>Họ và Tên của em:</label>
+        <input type="text" id="studentName" placeholder="Ví dụ: Nguyễn Văn A" required>
+        
+        <label>Chọn bài để ôn tập:</label>
         <select id="unitSelect">
             <option value="Unit 1">Unit 1</option>
             <option value="Unit 2">Unit 2</option>
+            <option value="Unit 3">Unit 3</option>
         </select>
         
         <button onclick="startTest()">Bắt đầu làm bài</button>
-        <p id="loadingText" class="hidden" style="text-align: center; color: #e67e22;">Đang tải đề thi từ Google Sheets...</p>
+        <div id="loadingText" class="hidden loading">⏳ Đang lấy đề thi, đợi một chút nhé...</div>
     </div>
 
     <!-- MÀN HÌNH LÀM BÀI -->
     <div id="test-screen" class="card hidden">
         <h2 id="test-title">Đề thi</h2>
         <div id="questions-container"></div>
-        <button onclick="submitTest()" style="background-color: #27ae60;">Nộp bài & Xem điểm</button>
+        <button class="btn-submit" onclick="submitTest()">✨ Nộp bài & Xem điểm</button>
     </div>
+</div>
 
-    <script>
-        // BẠN HÃY DÁN LINK WEB APP GOOGLE SCRIPT CỦA BẠN VÀO ĐÂY !!!
-        const API_URL = "https://script.google.com/macros/s/AKfycbzabp_kl5-WJNjMUP9t7OsidBsPVrm2MK5fW-7BukU4jO4D35dsy0L6CZu4de2nweTsBA/exec"; 
+<script>
+    // 👇👇👇 DÁN LINK WEB APP CỦA BẠN VÀO ĐÂY 👇👇👇
+    const API_URL = "https://script.google.com/macros/s/AKfycbw33V_isll0Crp6AqJwA2J6uePPAIbPcwRfLf8pM3DL5BRiPX-5msdimvD0ijD3SQw-EQ/exec"; 
+    
+    let vocabData = [];
+    let totalQuestions = 0;
+
+    async function startTest() {
+        const name = document.getElementById("studentName").value.trim();
+        const unit = document.getElementById("unitSelect").value;
+        if (!name) return alert("Em quên nhập tên kìa!");
+
+        document.getElementById("loadingText").classList.remove("hidden");
+
+        try {
+            const response = await fetch(`${API_URL}?unit=${unit}`);
+            vocabData = await response.json();
+            
+            if(vocabData.length === 0) {
+                alert("Chưa có từ vựng nào trong Unit này trên hệ thống!");
+                document.getElementById("loadingText").classList.add("hidden");
+                return;
+            }
+
+            totalQuestions = vocabData.length;
+            generateQuestions();
+
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("test-screen").classList.remove("hidden");
+            document.getElementById("test-title").innerText = `Học sinh: ${name} - ${unit}`;
+        } catch (error) {
+            alert("Lỗi kết nối! Em hãy thử tải lại trang nhé.");
+        }
+    }
+
+    function generateQuestions() {
+        const container = document.getElementById("questions-container");
+        container.innerHTML = "";
         
-        let vocabData = [];
+        const shuffled = [...vocabData].sort(() => 0.5 - Math.random());
+        const part1 = shuffled.slice(0, Math.ceil(shuffled.length / 2));
+        const part2 = shuffled.slice(Math.ceil(shuffled.length / 2));
+
+        // PHẦN 1: ĐIỀN TỪ
+        container.innerHTML += `<h3>🎯 Phần 1: Mất chữ cái</h3>`;
+        part1.forEach((item, index) => {
+            let hiddenWord = item.word.replace(/[aeiou]/ig, '_'); 
+            
+            // Đã thêm thuộc tính data-word để lưu lại từ gốc phục vụ báo cáo lỗi sai
+            container.innerHTML += `
+                <div class="question-block" data-type="fill" data-word="${item.word}" data-answer="${item.word.toLowerCase()}">
+                    <p><b>Câu ${index + 1}:</b> Nghĩa là "<b>${item.meaning}</b>".</p>
+                    <p>Gợi ý: ${hiddenWord}</p>
+                    <input type="text" class="answer-input" placeholder="Viết lại từ tiếng Anh đúng...">
+                </div>
+            `;
+        });
+
+        // PHẦN 2: TRẮC NGHIỆM
+        container.innerHTML += `<h3>🧠 Phần 2: Chọn nghĩa đúng</h3>`;
+        part2.forEach((item, index) => {
+            let options = [item.meaning];
+            while(options.length < 4 && vocabData.length >= 4) {
+                let randomMeaning = vocabData[Math.floor(Math.random() * vocabData.length)].meaning;
+                if(!options.includes(randomMeaning)) options.push(randomMeaning);
+            }
+            options.sort(() => 0.5 - Math.random()); 
+
+            let optionsHTML = options.map(opt => `
+                <label class="option-label">
+                    <input type="radio" name="q_${item.word}" value="${opt}"> ${opt}
+                </label>
+            `).join("");
+
+            // Đã thêm data-word
+            container.innerHTML += `
+                <div class="question-block" data-type="choice" data-word="${item.word}" data-answer="${item.meaning}">
+                    <p><b>Câu ${part1.length + index + 1}:</b> Từ "<b>${item.word}</b>" có nghĩa là gì?</p>
+                    ${optionsHTML}
+                </div>
+            `;
+        });
+    }
+
+    async function submitTest() {
         let score = 0;
-        let totalQuestions = 0;
+        let wrongDetails = []; // Mảng lưu các câu sai
+        const blocks = document.querySelectorAll(".question-block");
+        
+        blocks.forEach(block => {
+            const type = block.getAttribute("data-type");
+            const correctAnswer = block.getAttribute("data-answer");
+            const word = block.getAttribute("data-word"); // Lấy từ gốc
 
-        async function startTest() {
-            const name = document.getElementById("studentName").value;
-            const unit = document.getElementById("unitSelect").value;
-            if (!name) return alert("Vui lòng nhập tên!");
-
-            document.getElementById("loadingText").classList.remove("hidden");
-
-            try {
-                // Gọi API lấy từ vựng từ Google Sheet
-                const response = await fetch(`${API_URL}?unit=${unit}`);
-                vocabData = await response.json();
-                
-                if(vocabData.length === 0) {
-                    alert("Chưa có từ vựng nào trong Unit này trên Sheet!");
-                    document.getElementById("loadingText").classList.add("hidden");
-                    return;
+            if (type === "fill") {
+                const studentAnswer = block.querySelector(".answer-input").value.trim().toLowerCase();
+                if (studentAnswer === correctAnswer) {
+                    score++;
+                } else {
+                    wrongDetails.push(`[Điền từ] ${word}: Khách làm "${studentAnswer || 'bỏ trống'}"`);
                 }
-
-                totalQuestions = vocabData.length;
-                generateQuestions();
-
-                document.getElementById("login-screen").classList.add("hidden");
-                document.getElementById("test-screen").classList.remove("hidden");
-                document.getElementById("test-title").innerText = `Bài làm của: ${name} - ${unit}`;
-            } catch (error) {
-                alert("Lỗi khi tải dữ liệu. Hãy kiểm tra lại Link API.");
+            } else if (type === "choice") {
+                const selected = block.querySelector("input[type='radio']:checked");
+                if (selected && selected.value === correctAnswer) {
+                    score++;
+                } else {
+                    const ans = selected ? selected.value : 'bỏ trống';
+                    wrongDetails.push(`[Trắc nghiệm] ${word}: Chọn "${ans}"`);
+                }
             }
-        }
+        });
 
-        function generateQuestions() {
-            const container = document.getElementById("questions-container");
-            container.innerHTML = "";
-            
-            // Hàm xáo trộn mảng
-            const shuffled = [...vocabData].sort(() => 0.5 - Math.random());
-            
-            // Chia dữ liệu làm 2 phần (Phần 1: Điền từ, Phần 2: Trắc nghiệm nghĩa). 
-            // Dạng Nối từ cần code phức tạp hơn một chút nên ở bản demo này mình gộp vào Trắc nghiệm cho web chạy nhẹ nhàng nhất.
-            const part1 = shuffled.slice(0, Math.ceil(shuffled.length / 2));
-            const part2 = shuffled.slice(Math.ceil(shuffled.length / 2));
+        const finalScore = `${score}/${totalQuestions}`;
+        alert(`Làm tốt lắm! Em đúng ${finalScore} câu. Nhấn OK để nộp bài nhé!`);
 
-            // Dạng 1: Điền chữ cái khuyết (VD: a_azi_g)
-            container.innerHTML += `<h3>Phần 1: Điền chữ cái còn thiếu</h3>`;
-            part1.forEach((item, index) => {
-                // Tạo chữ khuyết bằng cách thay thế các nguyên âm (a,e,i,o,u) thành dấu _
-                let hiddenWord = item.word.replace(/[aeiou]/ig, '_'); 
-                
-                container.innerHTML += `
-                    <div class="question-block" data-type="fill" data-answer="${item.word.toLowerCase()}">
-                        <p><b>Câu ${index + 1}:</b> Nghĩa là "${item.meaning}". Từ này viết là: <b>${hiddenWord}</b></p>
-                        <input type="text" class="answer-input" placeholder="Viết từ hoàn chỉnh...">
-                    </div>
-                `;
+        // Nếu làm đúng hết thì ghi là Tuyệt đối, nếu sai thì nối các câu sai lại bằng dấu phẩy
+        const detailString = wrongDetails.length === 0 ? "Đúng 100%" : wrongDetails.join(" | ");
+
+        const resultData = {
+            studentName: document.getElementById("studentName").value,
+            unit: document.getElementById("unitSelect").value,
+            score: finalScore,
+            details: detailString // Biến mới gửi về Sheet
+        };
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(resultData)
             });
-
-            // Dạng 2: Trắc nghiệm nghĩa Tiếng Việt
-            container.innerHTML += `<h3>Phần 2: Chọn nghĩa đúng</h3>`;
-            part2.forEach((item, index) => {
-                // Tạo đáp án sai ngẫu nhiên
-                let options = [item.meaning];
-                while(options.length < 4 && vocabData.length >= 4) {
-                    let randomMeaning = vocabData[Math.floor(Math.random() * vocabData.length)].meaning;
-                    if(!options.includes(randomMeaning)) options.push(randomMeaning);
-                }
-                options.sort(() => 0.5 - Math.random()); // Xáo trộn đáp án
-
-                let optionsHTML = options.map(opt => `
-                    <label style="display:block; margin: 5px 0;">
-                        <input type="radio" name="q_${item.word}" value="${opt}"> ${opt}
-                    </label>
-                `).join("");
-
-                container.innerHTML += `
-                    <div class="question-block" data-type="choice" data-answer="${item.meaning}">
-                        <p><b>Câu ${part1.length + index + 1}:</b> Từ <b>"${item.word}"</b> có nghĩa là gì?</p>
-                        ${optionsHTML}
-                    </div>
-                `;
-            });
+            alert("Đã gửi điểm cho Thầy thành công!");
+            location.reload(); 
+        } catch (error) {
+            alert("Lỗi mạng, chưa gửi được điểm. Hãy thử nộp lại.");
         }
-
-        async function submitTest() {
-            score = 0;
-            const blocks = document.querySelectorAll(".question-block");
-            
-            blocks.forEach(block => {
-                const type = block.getAttribute("data-type");
-                const correctAnswer = block.getAttribute("data-answer");
-
-                if (type === "fill") {
-                    const studentAnswer = block.querySelector(".answer-input").value.trim().toLowerCase();
-                    if (studentAnswer === correctAnswer) score++;
-                } else if (type === "choice") {
-                    const selected = block.querySelector("input[type='radio']:checked");
-                    if (selected && selected.value === correctAnswer) score++;
-                }
-            });
-
-            const finalScore = `${score}/${totalQuestions}`;
-            alert(`Bạn đã đúng ${finalScore} câu! Đang nộp bài...`);
-
-            // Gửi dữ liệu về Google Sheets
-            const resultData = {
-                studentName: document.getElementById("studentName").value,
-                unit: document.getElementById("unitSelect").value,
-                score: finalScore
-            };
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(resultData)
-                });
-                alert("Nộp bài thành công! Thầy đã nhận được kết quả.");
-                location.reload(); // Tải lại trang
-            } catch (error) {
-                alert("Đã có lỗi xảy ra khi nộp bài. Lỗi CORS hoặc mạng.");
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
